@@ -225,7 +225,7 @@ check_sync_status() {
       continue
     fi
 
-    blocks_left=$((network_height - local_height))
+    blocks_left=$(echo "$network_height - $local_height" | bc)
     if [ "$blocks_left" -lt 0 ]; then
       blocks_left=0
     fi
@@ -241,6 +241,7 @@ check_sync_status() {
 
   trap - SIGINT 
 }
+
 
 # Function to define service file name
 define_service_name() {
