@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ฟังก์ชันสำหรับตรวจสอบและติดตั้งแพ็กเกจที่ขาด
+
 install_if_missing() {
   if ! command -v "$1" &> /dev/null; then
     echo "$1 not found. Installing..."
@@ -11,14 +11,14 @@ install_if_missing() {
   fi
 }
 
-# ตรวจสอบและติดตั้ง curl และ jq ถ้ายังไม่มี
+
 install_if_missing curl
 install_if_missing jq
 
-# ANSI color codes
+
 GREEN="\033[0;32m"
 BOLD="\033[1m"
-NC="\033[0m" # No Color
+NC="\033[0m" 
 printBlue() {
   echo -e "\033[1;34m$1\033[0m"
 }
@@ -34,24 +34,24 @@ printLine() {
   echo -e "--------------------------------------------------"
 }
 
-# Flag for autosnap
+
 from_autoinstall=true
 
-# ตัวแปรต่างๆ
+
 upgrade_height=0
 STORY_CHAIN_ID=iliad-0
 VER=1.22.3
 SEEDS="51ff395354c13fab493a03268249a74860b5f9cc@story-testnet-seed.itrocket.net:26656"
 
-# ดึงข้อมูล peers จาก JSON และแปลงเป็นรูปแบบที่ต้องการ
+
 PEERS="$(curl -s https://server-3.itrocket.net/testnet/story/.rpc_combined.json | jq -r 'to_entries | map(select(.key | test("^https://") | not)) | map("\(.value.id)@\(.key)") | join(",")')"
 
-# ตรวจสอบว่าคำสั่งที่จำเป็นมีอยู่หรือไม่
+
 for cmd in curl jq systemctl; do
   command -v $cmd > /dev/null 2>&1 || { echo "Error: $cmd is not installed." >&2; exit 1; }
 done
 
-# Function to prompt user to continue or exit
+
 ask_to_continue() {
   read -p "$(printYellow 'Do you want to continue anyway? (y/n): ')" choice
   if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
@@ -59,7 +59,6 @@ ask_to_continue() {
   fi
 }
 
-# ฟังก์ชันสำหรับติดตั้ง Story-Geth
 install_geth() {
   cd $HOME
   wget -O geth https://github.com/piplabs/story-geth/releases/download/v0.9.4/geth-linux-amd64
@@ -69,7 +68,7 @@ install_geth() {
   [ ! -d "$HOME/.story/geth" ] && mkdir -p "$HOME/.story/geth"
 }
 
-# ฟังก์ชันสำหรับติดตั้ง Story
+
 install_story() {
   cd $HOME
   rm -rf story
@@ -80,7 +79,7 @@ install_story() {
   mv $HOME/story/story $HOME/go/bin/
 }
 
-# ฟังก์ชันสำหรับติดตั้ง Node
+
 install_node() {
     read -p "Enter your Validator Name: " MONIKER
     export MONIKER
@@ -145,7 +144,7 @@ install_node() {
     printBlue "done"
     printLine
   printGreen "9. Creating Story-geth and Story service files..." && sleep 1
-# create geth servie file
+
 sudo tee /etc/systemd/system/story-geth.service > /dev/null <<EOF
 [Unit]
 Description=Story Geth daemon
@@ -162,7 +161,7 @@ LimitNOFILE=65535
 WantedBy=multi-user.target
 EOF
 
-# create story service file
+
 sudo tee /etc/systemd/system/story.service > /dev/null <<EOF
 [Unit]
 Description=Story Service
@@ -193,7 +192,7 @@ printBlue "done"
 
 printLine
 
-# ให้ผู้ใช้เลือกว่าจะดาวน์โหลด snapshot หรือไม่
+
 read -p "$(printGreen 'Do you want to download the snapshot? (y/n): ')" download_choice
 if [[ "$download_choice" == "y" || "$download_choice" == "Y" ]]; then
   printGreen "11. Downloading snapshot..." && sleep 1
@@ -209,11 +208,11 @@ else
 fi
 }
 
-# Function to check node sync status
+
 check_sync_status() {
   rpc_port=$(grep -m 1 -oP '^laddr = "\K[^"]+' "$HOME/.story/story/config/config.toml" | cut -d ':' -f 3)
   
-  trap "echo -e '\nExiting sync status...'; return" SIGINT  # Trap Ctrl+C
+  trap "echo -e '\nExiting sync status...'; return" SIGINT  
 
   while true; do
     local_height=$(curl -s localhost:$rpc_port/status | jq -r '.result.sync_info.latest_block_height')
@@ -243,7 +242,7 @@ check_sync_status() {
 }
 
 
-# Function to define service file name
+
 define_service_name() {
   service_name=$1
   print_name=$2
